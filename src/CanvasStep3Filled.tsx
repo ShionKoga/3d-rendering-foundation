@@ -11,18 +11,20 @@ import {
 
 type Triangle = [number, number, number];
 
-export default function CanvasStep4Filled({
+export default function CanvasStep3Filled({
 	vertices,
 	triangles,
 	drawWire = true,
+	autoRotate = false,
 }: {
 	vertices: Point3D[];
 	triangles: Triangle[];
 	drawWire?: boolean;
+	autoRotate?: boolean;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-	useEffect(() => {
+	async function renderWithAngle(xAngle: number, yAngle: number, zAngle: number) {
 		const canvasElement = canvasRef.current;
 		if (!canvasElement) return;
 		const drawingContext = canvasElement.getContext("2d");
@@ -31,12 +33,8 @@ export default function CanvasStep4Filled({
 		const w = canvasElement.width;
 		const h = canvasElement.height;
 
-		const rotateXAngle = Math.PI / 6;
-		const rotateYAngle = Math.PI / 5;
-		const rotateZAngle = 0;
-
 		// 1) モデル空間の頂点を回転（ワールド空間に相当）
-		const rotated = vertices.map((p) => rotatePoint(p, rotateXAngle, rotateYAngle, rotateZAngle));
+		const rotated = vertices.map((p) => rotatePoint(p, xAngle, yAngle, zAngle));
 
 		// 2) 画面座標へ投影
 		const projected = rotated.map((p) => projectWithDepth(p, w, h));
@@ -47,7 +45,26 @@ export default function CanvasStep4Filled({
 
 		// 4) 描画
 		drawingContext.clearRect(0, 0, w, h);
-		draw(drawingContext, faces, projected, drawWire, true)
+		await draw(drawingContext, faces, projected, drawWire, !autoRotate)
+	}
+
+	useEffect(() => {
+		let rotateXAngle = Math.PI / 6;
+		let rotateYAngle = Math.PI / 5;
+		const rotateZAngle = 0;
+
+		renderWithAngle(rotateXAngle, rotateYAngle, rotateZAngle)
+
+		if (!autoRotate) return
+
+		const intervalId = setInterval(async () => {
+			rotateXAngle += Math.PI / 36;
+			rotateYAngle += Math.PI / 48;
+
+			await renderWithAngle(rotateXAngle, rotateYAngle, rotateZAngle)
+		}, 500)
+
+		return () => clearInterval(intervalId)
 	}, [vertices, triangles, drawWire]);
 
 	return (

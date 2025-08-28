@@ -1,8 +1,7 @@
 import CanvasStep1Basic from './CanvasStep1Basic.tsx'
 import type { Point3D } from './helpers.ts'
 import CanvasStep2Rotated from './CanvasStep2Rotated.tsx'
-import CanvasStep3Rotating from './CanvasStep3Rotating.tsx'
-import CanvasStep4Filled from './CanvasStep4Filled.tsx'
+import CanvasStep3Filled from './CanvasStep3Filled.tsx'
 
 const cubeVertices: Point3D[] = [
   { x: -1, y: -1, z: -1 },
@@ -40,10 +39,9 @@ const cubeTriangles: Array<[number, number, number]> = [
 export default function App() {
   return (
     <>
-    <CanvasStep1Basic vertices={cubeVertices} edges={cubeEdges}/>
-    <CanvasStep2Rotated vertices={cubeVertices} edges={cubeEdges}/>
-    <CanvasStep3Rotating vertices={cubeVertices} edges={cubeEdges}/>
-    <CanvasStep4Filled vertices={cubeVertices} triangles={cubeTriangles} drawWire={true}/>
+			<CanvasStep1Basic vertices={cubeVertices} edges={cubeEdges}/>
+			<CanvasStep2Rotated vertices={cubeVertices} edges={cubeEdges} autoRotate={false}/>
+			<CanvasStep3Filled vertices={cubeVertices} triangles={cubeTriangles} drawWire={true} autoRotate={false}/>
     </>
   );
 }
