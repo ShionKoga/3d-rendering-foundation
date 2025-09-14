@@ -2,6 +2,7 @@ import CanvasStep1Basic from './CanvasStep1Basic.tsx'
 import type { Point3D } from './helpers.ts'
 import CanvasStep2Rotated from './CanvasStep2Rotated.tsx'
 import CanvasStep3Filled from './CanvasStep3Filled.tsx'
+import CanvasStep4CameraOrbit from "./CanvasStep4CameraOrbit.tsx";
 
 const cubeVertices: Point3D[] = [
   { x: -1, y: -1, z: -1 },
@@ -42,6 +43,7 @@ export default function App() {
 			<CanvasStep1Basic vertices={cubeVertices} edges={cubeEdges}/>
 			<CanvasStep2Rotated vertices={cubeVertices} edges={cubeEdges} autoRotate={true}/>
 			<CanvasStep3Filled vertices={cubeVertices} triangles={cubeTriangles} drawWire={true} autoRotate={true}/>
+			<CanvasStep4CameraOrbit vertices={cubeVertices} triangles={cubeTriangles}/>
     </>
   );
 }

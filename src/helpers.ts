@@ -21,6 +21,45 @@ export function projectWithDepth(point: Point3D, w: number, h: number): Point3D 
 	}
 }
 
+// カメラ基底ベクトル（右・上・前）を作る
+function buildCameraBasis(camera: Point3D, target: Point3D, upHint: Point3D = {x:0,y:1,z:0}) {
+	const forward = normalize(sub(target, camera));           // カメラ→被写体
+	const right = normalize(cross(forward, upHint));          // 右
+	const trueUp = cross(right, forward);                     // 上（直交化済み）
+	return { right, up: trueUp, forward };
+}
+
+// カメラ視点で投影（深度を残す）
+export function projectFromCameraWithDepth(
+	point: Point3D,
+	camera: Point3D,
+	target: Point3D,
+	canvasWidth: number,
+	canvasHeight: number,
+	focalLength: number = 120, // 画面上の拡大率
+	upHint: Point3D = {x:0,y:1,z:0}
+): Point3D {
+	const { right, up, forward } = buildCameraBasis(camera, target, upHint);
+
+	// ワールド→カメラ座標系へ（ビュー変換）
+	const rel = sub(point, camera);
+	const xCam = dot(rel, right);
+	const yCam = dot(rel, up);
+	const zCam = dot(rel, forward); // 前方が + になる向き
+
+	// カメラの背面にある点はそのまま返す（呼び出し側でスキップ可）
+	if (zCam <= 0) return { x: NaN, y: NaN, z: zCam };
+
+	// 透視投影
+	const scale = focalLength / zCam;
+	return {
+		x: xCam * scale + canvasWidth / 2,
+		y: yCam * scale + canvasHeight / 2,
+		z: zCam, // 深度はカメラ空間の z を保持
+	};
+}
+
+
 const sleep = (milliseconds: number) =>
 	new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
