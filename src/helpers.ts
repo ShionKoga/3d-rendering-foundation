@@ -85,7 +85,9 @@ export function getRenderFaces(triangles: Array<[number, number, number]>, point
 
 		// 3D法線で簡易シェーディング（0〜1）
 		const n = faceNormal(pointsBeforeProject[ia], pointsBeforeProject[ib], pointsBeforeProject[ic]);
-		const shade = Math.max(0, dot(normalize(n), lightDirection));
+		const shade = lambertShading(normalize(n), lightDirection)
+		// const viewDir = { x: 0, y: 0, z: -1 }; // カメラが手前から奥を見る場合
+		// const shade = phongShading(normalize(n), lightDirection, viewDir)
 
 		return { a: ia, b: ib, c: ic, depth, shade };
 	})
@@ -94,6 +96,45 @@ export function getRenderFaces(triangles: Array<[number, number, number]>, point
 
 	return faces
 }
+
+function lambertShading(normal: Point3D, lightDirection: Point3D) {
+    return Math.max(0, dot(normal, lightDirection));
+}
+
+function phongShading(
+  normal: Point3D,
+  lightDir: Point3D,
+  viewDir: Point3D,
+  kd = 1.0,  // 拡散反射係数
+  ks = 0.5,  // 鏡面反射係数
+  ka = 0.2,  // 環境光係数
+  alpha = 16 // 光沢度
+): number {
+  // normalize
+  const n = normalize(normal);
+  const l = normalize(lightDir);
+  const v = normalize(viewDir);
+
+  // 1. 環境光
+  const ambient = ka;
+
+  // 2. 拡散反射 (Lambert)
+  const diffuse = kd * Math.max(0, dot(n, l));
+
+  // 3. 鏡面反射 (Phong)
+  // 反射ベクトル r = 2(n·l)n - l
+  const dotNL = Math.max(0, dot(n, l));
+  const r = {
+    x: 2 * dotNL * n.x - l.x,
+    y: 2 * dotNL * n.y - l.y,
+    z: 2 * dotNL * n.z - l.z,
+  };
+  const specular = ks * Math.pow(Math.max(0, dot(normalize(r), v)), alpha);
+
+  // 合成
+  return ambient + diffuse + specular;
+}
+
 
 // X軸回転
 function rotateAroundX(p: Point3D, radians: number): Point3D {
@@ -134,14 +175,22 @@ export function rotatePoint(p: Point3D, rx: number, ry: number, rz: number = 0):
 
 /* --------- ベクトルユーティリティ（簡易） --------- */
 export function sub(a: Point3D, b: Point3D): Point3D { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+
+// 外積
 export function cross(a: Point3D, b: Point3D): Point3D {
 	return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x };
 }
+
+// 内積
 export function dot(a: Point3D, b: Point3D): number { return a.x * b.x + a.y * b.y + a.z * b.z; }
+
+// ベクトルを正規化（長さを1に揃える）
 export function normalize(v: Point3D): Point3D {
 	const n = Math.hypot(v.x, v.y, v.z) || 1;
 	return { x: v.x / n, y: v.y / n, z: v.z / n };
 }
+
+// △ABCの法線ベクトルを求める
 export function faceNormal(a: Point3D, b: Point3D, c: Point3D): Point3D {
 	return cross(sub(b, a), sub(c, a));
 }

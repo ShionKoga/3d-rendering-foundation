@@ -40,8 +40,8 @@ export default function App() {
   return (
     <>
 			<CanvasStep1Basic vertices={cubeVertices} edges={cubeEdges}/>
-			<CanvasStep2Rotated vertices={cubeVertices} edges={cubeEdges} autoRotate={false}/>
-			<CanvasStep3Filled vertices={cubeVertices} triangles={cubeTriangles} drawWire={true} autoRotate={false}/>
+			<CanvasStep2Rotated vertices={cubeVertices} edges={cubeEdges} autoRotate={true}/>
+			<CanvasStep3Filled vertices={cubeVertices} triangles={cubeTriangles} drawWire={true} autoRotate={true}/>
     </>
   );
 }
